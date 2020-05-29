@@ -98,6 +98,23 @@ func (ac *_dbCache) get(name string) (al *alias, ok bool) {
 	return
 }
 
+func (ac *_dbCache) removeAllAias() {
+	ac.mux.Lock()
+	defer ac.mux.Unlock()
+	for _, al := range ac.cache {
+		al.DB.Lock()
+		for _, stmt := range al.DB.stmts {
+			stmt.Close()
+		}
+		al.DB.Unlock()
+		al.DB.DB.Close()
+	}
+}
+
+func DeregisterAll() {
+	dataBaseCache.removeAllAias()
+}
+
 // get default alias.
 func (ac *_dbCache) getDefault() (al *alias) {
 	al, _ = ac.get("default")
